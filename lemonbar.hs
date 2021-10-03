@@ -1,6 +1,6 @@
 -- lemonbar config
--- compile with $ stack ghc lemonbar.hs -- -threaded
--- run with ./lemonbar +RTS -N
+-- compile with $ stack ghc lemonbar.hs
+-- run with $ ./lemonbar
 
 import Data.Time
 import Data.Text (pack, replace, unpack)
@@ -38,7 +38,7 @@ pushWork :: MVar String -> IO ()
 pushWork work = do f <- focused
                    w <- workspaces
                    x <- tryTakeMVar work
-                   putMVar work $ formatWork f w
+                   putMVar work $! formatWork f w
                    threadDelay 1400 -- update often
                    pushWork work
 
@@ -47,7 +47,7 @@ formatClock t = " %{c}" ++ (if t!!4 == ' ' then (take 3 t ++ take 9 (drop 4 t)) 
 pushClock :: MVar String -> IO ()
 pushClock clock = do t <- time
                      x <- tryTakeMVar clock
-                     putMVar clock $ formatClock t
+                     putMVar clock $! formatClock t
                      threadDelay 30000000 -- update every 30 sec
                      pushClock clock
 
@@ -57,6 +57,6 @@ pushBat :: MVar String -> IO ()
 pushBat bat = do b <- battery
                  ch <- charging
                  x <- tryTakeMVar bat
-                 putMVar bat $ formatBat b ch
+                 putMVar bat $! formatBat b ch
                  threadDelay 10000000 -- update every 10 sec
                  pushBat bat
