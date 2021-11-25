@@ -1,8 +1,10 @@
 -- lemonbar config
--- compile with $ stack ghc lemonbar.hs -- -O2
--- run with $ ./lemonbar
+-- compile with $ stack ghc lemonconf.hs
+-- run with $ ./lemonconf | lemonbar
 
+{-# OPTIONS_GHC -O2            #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 import Prelude hiding (init, putStrLn, readFile, take)
 import Data.Time
 import Data.Text
@@ -11,22 +13,24 @@ import System.Process
 import Control.Concurrent
 
 -- set up MVars and threads
-main = do work <- newEmptyMVar
-          clock <- newEmptyMVar
-          bat <- newEmptyMVar
-          forkIO $ pushWork work
-          forkIO $ pushClock clock
-          forkIO $ pushBat bat
-          printLemon work clock bat
+main = do 
+    work  <- newEmptyMVar
+    clock <- newEmptyMVar
+    bat   <- newEmptyMVar
+    forkIO $ pushWork work
+    forkIO $ pushClock clock
+    forkIO $ pushBat bat
+    printLemon work clock bat
 
 -- print and repeat
 printLemon :: MVar Text -> MVar Text -> MVar Text -> IO ()
-printLemon work clock bat = do w <- readMVar work
-                               c <- readMVar clock
-                               b <- readMVar bat
-                               putStrLn $ w <> c <> b
-                               threadDelay 1500
-                               printLemon work clock bat
+printLemon work clock bat = do
+    w <- readMVar work
+    c <- readMVar clock
+    b <- readMVar bat
+    putStrLn $ w <> c <> b
+    threadDelay 1500
+    printLemon work clock bat
 
 -- docs to get info from
 time = getZonedTime >>= return . formatTime defaultTimeLocale "%b %e, %k:%M"
@@ -41,30 +45,33 @@ formatWork f w = "%{l}" <> (replace "\n" "  " (replace ("\n" <> g)
     where g = pack f
           v = pack w
 pushWork :: MVar Text -> IO ()
-pushWork work = do f <- focused
-                   w <- workspaces
-                   x <- tryTakeMVar work
-                   putMVar work $! formatWork f w
-                   threadDelay 1400 -- update often
-                   pushWork work
+pushWork work = do 
+    f <- focused
+    w <- workspaces
+    x <- tryTakeMVar work
+    putMVar work $! formatWork f w
+    threadDelay 1400 -- update often
+    pushWork work
 
 -- time and date
 formatClock t = " %{c}" <> if index c 0 == ' ' then take 3 c <> takeEnd 7 c
     else c
     where c = pack t
 pushClock :: MVar Text -> IO ()
-pushClock clock = do t <- time
-                     x <- tryTakeMVar clock
-                     putMVar clock $! formatClock t
-                     threadDelay 30000000 -- update every 30 sec
-                     pushClock clock
+pushClock clock = do 
+    t <- time
+    x <- tryTakeMVar clock
+    putMVar clock $! formatClock t
+    threadDelay 30000000 -- update every 30 sec
+    pushClock clock
 
 -- battery and charge status
 formatBat b ch = " %{r}" <> init b <> (if ch == "Charging\n" then "%+" else "%")
 pushBat :: MVar Text -> IO ()
-pushBat bat = do b <- battery
-                 ch <- charging
-                 x <- tryTakeMVar bat
-                 putMVar bat $! formatBat b ch
-                 threadDelay 10000000 -- update every 10 sec
-                 pushBat bat
+pushBat bat = do 
+    b  <- battery
+    ch <- charging
+    x  <- tryTakeMVar bat
+    putMVar bat $! formatBat b ch
+    threadDelay 10000000 -- update every 10 sec
+    pushBat bat
