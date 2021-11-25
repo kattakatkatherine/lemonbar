@@ -1,5 +1,5 @@
 -- lemonbar config
--- compile with $ stack ghc lemonbar.hs
+-- compile with $ stack ghc lemonbar.hs -- -O2
 -- run with $ ./lemonbar
 
 {-# LANGUAGE OverloadedStrings #-}
@@ -29,7 +29,7 @@ printLemon work clock bat = do w <- readMVar work
                                printLemon work clock bat
 
 -- docs to get info from
-time = getZonedTime >>= return . formatTime defaultTimeLocale "%b%e,%k:%M"
+time = getZonedTime >>= return . formatTime defaultTimeLocale "%b %e, %k:%M"
 charging = readFile "/sys/class/power_supply/BAT0/status"
 battery = readFile "/sys/class/power_supply/BAT0/capacity"
 focused = readProcess "bspc" ["query","-D","-d","focused","--names"] ""
@@ -49,7 +49,7 @@ pushWork work = do f <- focused
                    pushWork work
 
 -- time and date
-formatClock t = " %{c}" <> if index c 4 == ' ' then take 3 c <> takeEnd 7 c
+formatClock t = " %{c}" <> if index c 0 == ' ' then take 3 c <> takeEnd 7 c
     else c
     where c = pack t
 pushClock :: MVar Text -> IO ()
