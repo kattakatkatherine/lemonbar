@@ -28,8 +28,9 @@ printLemon work clock bat = do
     w <- readMVar work
     c <- readMVar clock
     b <- readMVar bat
-    putStrLn $ w <> c <> b
-    threadDelay 1500
+    -- lemonbar only processes every ~100th output for technical reasons
+    mapM_ (\x -> putStrLn $ w <> c <> b) [0..128]
+    threadDelay 100000
     printLemon work clock bat
 
 -- docs to get info from
@@ -50,7 +51,7 @@ pushWork work = do
     w <- workspaces
     x <- tryTakeMVar work
     putMVar work $! formatWork f w
-    threadDelay 1400 -- update often
+    threadDelay 90000 -- update often
     pushWork work
 
 -- time and date
