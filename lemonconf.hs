@@ -29,7 +29,7 @@ printLemon work clock bat = do
     c <- readMVar clock
     b <- readMVar bat
     -- lemonbar only processes every ~100th output for technical reasons
-    mapM_ (\x -> putStrLn $ w <> c <> b) [0..128]
+    mapM_ (\x -> putStrLn $ w <> c <> b) [0..127]
     threadDelay 100000
     printLemon work clock bat
 
